@@ -1,0 +1,149 @@
+include <stdio.h>
+#include <string.h>
+
+// Structure to represent a medical item
+struct MedicalItem {
+    char name[50];
+    int id;
+    float price;
+    int stock;
+};
+
+// Structure to represent purchased items
+struct PurchasedItem {
+    char name[50];
+    int quantity;
+    float price;
+};
+
+// Function to display the menu
+void displayMenu() {
+    printf("\nMedical Store System Menu:\n");
+    printf("1. Display Available Items\n");
+    printf("2. Buy Items\n");
+    printf("3. Display Bill\n");
+    printf("4. Exit\n");
+}
+
+// Function to display available items
+void displayItems(struct MedicalItem items[], int count) {
+    printf("\nAvailable Items:\n");
+    for (int i = 0; i < count; i++) {
+        printf("Item ID: %d\n", items[i].id);
+        printf("Name: %s\n", items[i].name);
+        printf("Price: %.2f\n", items[i].price);
+        printf("Stock: %d\n", items[i].stock);
+        printf("\n");
+    }
+}
+
+
+// Function to buy items
+void buyItems(struct MedicalItem items[], int count, struct PurchasedItem purchasedItems[], int *purchasedItemCount) {
+    int itemId, quantity;
+    printf("Enter the Item ID you want to buy: ");
+    scanf("%d", &itemId);
+
+    int index = -1;
+    for (int i = 0; i < count; i++) {
+        if (items[i].id == itemId) {
+            index = i;
+            break;
+        }
+    }
+
+    if (index == -1) {
+        printf("Item not found.\n");
+        return;
+    }
+
+    printf("Enter the quantity you want to buy: ");
+    scanf("%d", &quantity);
+
+    if (quantity <= 0) {
+        printf("Invalid quantity.\n");
+        return;
+    }
+
+    if (quantity > items[index].stock) {
+        printf("Insufficient stock.\n");
+    } else {
+        items[index].stock -= quantity;
+
+        // Record the purchased item
+        strcpy(purchasedItems[*purchasedItemCount].name, items[index].name);
+        purchasedItems[*purchasedItemCount].quantity = quantity;
+        purchasedItems[*purchasedItemCount].price = items[index].price * quantity;
+        (*purchasedItemCount)++;
+
+        printf("You have purchased %d %s for %.2f\n", quantity, items[index].name, quantity * items[index].price);
+
+        printf("Remaining stock for Item ID %d: %d\n", itemId, items[index].stock);
+    }
+}
+
+// Function to calculate the total bill
+float calculateBill(struct PurchasedItem purchasedItems[], int purchasedItemCount) {
+    float totalBill = 0;
+    for (int i = 0; i < purchasedItemCount; i++) {
+        totalBill += purchasedItems[i].price;
+    }
+    return totalBill;
+}
+
+// Function to generate and display the bill
+void generateBill(struct PurchasedItem purchasedItems[], int purchasedItemCount) {
+    printf("\nYour Bill:\n");
+    for (int i = 0; i < purchasedItemCount; i++) {
+        printf("Item: %s, Quantity: %d, Price: %.2f\n", purchasedItems[i].name, purchasedItems[i].quantity, purchasedItems[i].price);
+    }
+}
+
+int main() {
+    struct MedicalItem items[] = {
+        {"Item 1", 1, 10.0, 20},
+        {"Item 2", 2, 5.0, 15},
+        {"Item 3", 3, 15.0, 10},
+        {"Item 4", 4, 8.0, 30},
+        {"Item 5", 5, 12.0, 25},
+        {"Item 6", 6, 7.0, 22},
+        {"Item 7", 7, 18.0, 12},
+        {"Item 8", 8, 9.0, 35},
+        {"Item 9", 9, 14.0, 18},
+        {"Item 10", 10, 20.0, 10},
+    };
+
+    int itemCount = sizeof(items) / sizeof(items[0]);
+
+    int choice;
+    float totalBill = 0;
+    struct PurchasedItem purchasedItems[100]; // Assuming a maximum of 100 different items can be purchased
+    int purchasedItemCount = 0;
+
+    do {
+        displayMenu();
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                displayItems(items, itemCount);
+                break;
+            case 2:
+                buyItems(items, itemCount, purchasedItems, &purchasedItemCount);
+                break;
+            case 3:
+                totalBill = calculateBill(purchasedItems, purchasedItemCount);
+                generateBill(purchasedItems, purchasedItemCount);
+                printf("Total Bill: %.2f\n", totalBill);
+                break;
+            case 4:
+                printf("Exiting the program.\n");
+                break;
+            default:
+                printf("Invalid choice. Please try again.\n");
+        }
+    } while (choice != 4);
+
+    return 0;
+}
